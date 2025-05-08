@@ -9,6 +9,12 @@
   --apple-gray: #8E8E93;
   --apple-light-gray: #F2F2F7;
   --apple-font: SF Pro Text, -apple-system, BlinkMacSystemFont, system-ui, Roboto, Helvetica, Arial, sans-serif;
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+  --apple-blue-light: rgba(0, 122, 255, 0.1);
+  --apple-green-light: rgba(52, 199, 89, 0.1);
+  --apple-card-bg: rgb(255, 255, 255);
 }
 
 @theme inline {
@@ -23,36 +29,53 @@
     --background: #000000;
     --foreground: #ffffff;
     --apple-light-gray: #1C1C1E;
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 30, 30, 30;
+    --apple-blue: rgb(10, 132, 255);
+    --apple-blue-light: rgba(10, 132, 255, 0.1);
+    --apple-red: rgb(255, 69, 58);
+    --apple-green: rgb(48, 209, 88);
+    --apple-green-light: rgba(48, 209, 88, 0.1);
+    --apple-gray: rgb(142, 142, 147);
+    --apple-card-bg: rgb(30, 30, 30);
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
   font-family: var(--apple-font);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 .apple-card {
-  background-color: var(--background);
+  background-color: var(--apple-card-bg);
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .apple-button {
+  display: inline-block;
+  padding: 10px 20px;
   background-color: var(--apple-blue);
-  border-radius: 8px;
   color: white;
+  border-radius: 8px;
   font-weight: 500;
-  padding: 12px 24px;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
 }
 
 .apple-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 5px rgba(0, 122, 255, 0.3);
+  background-color: rgba(var(--apple-blue), 0.9);
 }
 
 .apple-button:active {
@@ -62,18 +85,20 @@ body {
 
 /* Secondary button style for End Quiz button */
 .apple-button-secondary {
+  display: inline-block;
+  padding: 10px 20px;
   background-color: transparent;
-  border: 1px solid var(--apple-gray);
+  color: var(--apple-blue);
+  border: 1px solid var(--apple-blue);
   border-radius: 8px;
-  color: var(--foreground);
   font-weight: 500;
-  padding: 12px 24px;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
 }
 
 .apple-button-secondary:hover {
-  background-color: var(--apple-light-gray);
-  transform: translateY(-1px);
+  background-color: var(--apple-blue-light);
 }
 
 .apple-button-secondary:active {
@@ -82,44 +107,48 @@ body {
 }
 
 .quiz-option {
-  border: 2px solid var(--apple-light-gray);
+  padding: 14px;
+  border: 1px solid rgba(var(--foreground-rgb), 0.1);
   border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .quiz-option:hover {
-  border-color: var(--apple-blue);
-  background-color: rgba(0, 122, 255, 0.05);
+  background-color: rgba(var(--foreground-rgb), 0.05);
 }
 
+/* Selected but answer not revealed yet */
+.quiz-option.selected {
+  border-color: var(--apple-blue);
+  background-color: var(--apple-blue-light);
+}
+
+/* Correct answer styling - now green instead of blue */
 .quiz-option.correct {
   border-color: var(--apple-green);
-  background-color: rgba(52, 199, 89, 0.1);
+  background-color: var(--apple-green-light);
+  box-shadow: 0 0 8px rgba(52, 199, 89, 0.4); /* Add green glow effect */
 }
 
+/* Incorrect answer styling */
 .quiz-option.incorrect {
   border-color: var(--apple-red);
   background-color: rgba(255, 59, 48, 0.1);
-}
-
-.quiz-option.selected {
-  border-color: var(--apple-blue);
-  background-color: rgba(0, 122, 255, 0.1);
+  box-shadow: 0 0 0 1px var(--apple-red);
 }
 
 .quiz-progress {
+  width: 100%;
   height: 4px;
-  background-color: var(--apple-light-gray);
+  background-color: rgba(var(--apple-gray), 0.2);
   border-radius: 2px;
-  margin: 20px 0;
 }
 
 .quiz-progress-bar {
   height: 100%;
-  background-color: var(--apple-blue);
+  background-color: var(--apple-green);
   border-radius: 2px;
   transition: width 0.3s ease;
 }
@@ -132,14 +161,14 @@ body {
 .score-circle {
   width: 120px;
   height: 120px;
-  border-radius: 60px;
-  margin: 0 auto;
+  border-radius: 50%;
+  background-color: var(--apple-green-light);
+  color: var(--apple-green);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 32px;
   font-weight: bold;
-  margin-bottom: 24px;
-  background-color: rgba(0, 122, 255, 0.1);
-  color: var(--apple-blue);
+  margin: 20px auto;
+  border: 2px solid var(--apple-green);
 }

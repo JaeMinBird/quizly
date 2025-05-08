@@ -18,7 +18,7 @@ export async function getQuestionsByLevel(level: number): Promise<QuizQuestion[]
   try {
     // Return the questions for the specified level from the static JSON
     // Convert the number to a string to safely access the levels object
-    const levelQuestions = quizDataJson.levels[String(level)];
+    const levelQuestions = (quizDataJson.levels as Record<string, QuizQuestion[]>)[String(level)];
     return levelQuestions || [];
   } catch (error) {
     console.error(`Error loading quiz data for level ${level}:`, error);

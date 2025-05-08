@@ -23,6 +23,8 @@ export default function Home() {
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
   const [unlimitedMode, setUnlimitedMode] = useState(false);
   const [questionsPerQuiz, setQuestionsPerQuiz] = useState(15);
+  const [explanation, setExplanation] = useState<string | null>(null);
+  const [loadingExplanation, setLoadingExplanation] = useState(false);
 
   // Fetch quiz data and available levels when component mounts
   useEffect(() => {
@@ -94,9 +96,36 @@ export default function Home() {
       setShowAnswer(false);
       setScore(0);
       setQuizFinished(false);
+      setExplanation(null);
     } catch (error) {
       setError('Failed to start quiz. Please try again.');
       console.error(error);
+    }
+  };
+
+  // Function to fetch explanation for a correct answer
+  const fetchExplanation = async (question: string, correctAnswer: string) => {
+    setLoadingExplanation(true);
+    try {
+      const response = await fetch('/api/explain', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question, correctAnswer }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch explanation');
+      }
+
+      const data = await response.json();
+      setExplanation(data.explanation);
+    } catch (error) {
+      console.error('Error fetching explanation:', error);
+      setExplanation('Unable to generate explanation at this time.');
+    } finally {
+      setLoadingExplanation(false);
     }
   };
 
@@ -107,6 +136,12 @@ export default function Home() {
     
     if (optionIndex === questions[currentQuestionIndex].correctAnswer) {
       setScore(score + 1);
+      // Don't fetch explanation when the answer is correct
+      setExplanation(null);
+    } else {
+      // Fetch explanation only when the answer is incorrect
+      const currentQ = questions[currentQuestionIndex];
+      fetchExplanation(currentQ.question, currentQ.options[currentQ.correctAnswer]);
     }
   };
 
@@ -122,6 +157,7 @@ export default function Home() {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedOption(null);
       setShowAnswer(false);
+      setExplanation(null);
     } else if (!unlimitedMode) {
       setQuizFinished(true);
     } else {
@@ -129,11 +165,13 @@ export default function Home() {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedOption(null);
       setShowAnswer(false);
+      setExplanation(null);
     }
   };
 
   const restartQuiz = () => {
     setQuizStarted(false);
+    setExplanation(null);
   };
 
   const getProgressPercentage = () => {
@@ -344,6 +382,23 @@ export default function Home() {
             </div>
           ))}
         </div>
+        
+        {/* Explanation Section */}
+        {showAnswer && selectedOption !== null && selectedOption !== currentQuestion.correctAnswer && (
+          <div className="mb-6">
+            <div className="p-4 bg-apple-red bg-opacity-10 rounded-lg border border-apple-red">
+              <h3 className="text-sm font-semibold text-apple-red mb-1">Why is this incorrect?</h3>
+              {loadingExplanation ? (
+                <div className="flex items-center text-apple-gray">
+                  <div className="w-4 h-4 border-2 border-apple-red border-t-transparent rounded-full animate-spin mr-2"></div>
+                  <span>Generating explanation...</span>
+                </div>
+              ) : (
+                <p className="text-sm">{explanation}</p>
+              )}
+            </div>
+          </div>
+        )}
         
         {/* Navigation */}
         <div className="flex">
