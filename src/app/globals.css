@@ -54,7 +54,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
 .apple-card {
   background-color: var(--apple-card-bg);
   border-radius: 12px;
@@ -172,3 +171,4 @@ body {
   margin: 20px auto;
   border: 2px solid var(--apple-green);
 }
+

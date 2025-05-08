@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { QuizQuestion } from "@/utils/parseQuestions";
+
+// Define the QuizQuestion interface since we removed the import
+interface QuizQuestion {
+  id?: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  level?: number;
+}
 
 interface LevelInfo {
   level: number;
@@ -23,8 +31,6 @@ export default function Home() {
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
   const [unlimitedMode, setUnlimitedMode] = useState(false);
   const [questionsPerQuiz, setQuestionsPerQuiz] = useState(15);
-  const [explanation, setExplanation] = useState<string | null>(null);
-  const [loadingExplanation, setLoadingExplanation] = useState(false);
 
   // Fetch quiz data and available levels when component mounts
   useEffect(() => {
@@ -96,36 +102,9 @@ export default function Home() {
       setShowAnswer(false);
       setScore(0);
       setQuizFinished(false);
-      setExplanation(null);
     } catch (error) {
       setError('Failed to start quiz. Please try again.');
       console.error(error);
-    }
-  };
-
-  // Function to fetch explanation for a correct answer
-  const fetchExplanation = async (question: string, correctAnswer: string) => {
-    setLoadingExplanation(true);
-    try {
-      const response = await fetch('/api/explain', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ question, correctAnswer }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch explanation');
-      }
-
-      const data = await response.json();
-      setExplanation(data.explanation);
-    } catch (error) {
-      console.error('Error fetching explanation:', error);
-      setExplanation('Unable to generate explanation at this time.');
-    } finally {
-      setLoadingExplanation(false);
     }
   };
 
@@ -136,12 +115,6 @@ export default function Home() {
     
     if (optionIndex === questions[currentQuestionIndex].correctAnswer) {
       setScore(score + 1);
-      // Don't fetch explanation when the answer is correct
-      setExplanation(null);
-    } else {
-      // Fetch explanation only when the answer is incorrect
-      const currentQ = questions[currentQuestionIndex];
-      fetchExplanation(currentQ.question, currentQ.options[currentQ.correctAnswer]);
     }
   };
 
@@ -157,7 +130,6 @@ export default function Home() {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedOption(null);
       setShowAnswer(false);
-      setExplanation(null);
     } else if (!unlimitedMode) {
       setQuizFinished(true);
     } else {
@@ -165,13 +137,11 @@ export default function Home() {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedOption(null);
       setShowAnswer(false);
-      setExplanation(null);
     }
   };
 
   const restartQuiz = () => {
     setQuizStarted(false);
-    setExplanation(null);
   };
 
   const getProgressPercentage = () => {
@@ -184,9 +154,9 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-apple-blue mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-xl">Loading quiz data...</p>
         </div>
       </div>
@@ -195,12 +165,12 @@ export default function Home() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="apple-card text-center max-w-md w-full">
-          <div className="text-apple-red text-xl mb-4">Error</div>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-white">
+        <div className="bg-white rounded-lg shadow-md p-6 text-center max-w-md w-full">
+          <div className="text-red-500 text-xl mb-4">Error</div>
           <p>{error}</p>
           <button 
-            className="apple-button mt-6" 
+            className="mt-6 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" 
             onClick={() => window.location.reload()}
           >
             Try Again
@@ -212,14 +182,14 @@ export default function Home() {
 
   if (!quizStarted) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-gray-900">
-        <div className="apple-card text-center max-w-md w-full">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-white">
+        <div className="bg-white rounded-lg shadow-md p-6 text-center max-w-md w-full">
           <h1 className="text-3xl font-bold mb-2">Quizly</h1>
-          <p className="text-apple-gray mb-8">Test your knowledge with these questions</p>
+          <p className="text-gray-600 mb-8">Test your knowledge with these questions</p>
           
           <div className="flex justify-center mb-8">
-            <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-apple-blue to-blue-600 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="w-20 h-20 rounded-lg bg-blue-500 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <path d="M12 8v4l3 3"></path>
               </svg>
@@ -230,13 +200,13 @@ export default function Home() {
             <h2 className="text-lg font-medium mb-2">Quiz Mode</h2>
             <div className="flex space-x-2 mb-4">
               <button
-                className={`flex-1 py-2 px-4 rounded-md border ${!unlimitedMode ? 'bg-apple-blue text-white' : 'border-gray-300'}`}
+                className={`flex-1 py-2 px-4 rounded-md border ${!unlimitedMode ? 'bg-blue-500 text-white' : 'border-gray-300'}`}
                 onClick={() => setUnlimitedMode(false)}
               >
                 Standard
               </button>
               <button
-                className={`flex-1 py-2 px-4 rounded-md border ${unlimitedMode ? 'bg-apple-blue text-white' : 'border-gray-300'}`}
+                className={`flex-1 py-2 px-4 rounded-md border ${unlimitedMode ? 'bg-blue-500 text-white' : 'border-gray-300'}`}
                 onClick={() => setUnlimitedMode(true)}
               >
                 Unlimited
@@ -245,45 +215,41 @@ export default function Home() {
             
             {!unlimitedMode && (
               <div className="mb-4">
-                <label className="block text-sm text-apple-gray mb-1">Questions per quiz</label>
+                <label className="block text-sm text-gray-600 mb-1">Questions per quiz</label>
                 <select
-                  className="w-full p-2 border rounded-md bg-white dark:bg-gray-800"
+                  className="w-full p-2 border rounded-md bg-white"
                   value={questionsPerQuiz}
-                  onChange={(e) => setQuestionsPerQuiz(parseInt(e.target.value, 10))}
+                  onChange={(e) => setQuestionsPerQuiz(parseInt(e.target.value))}
                 >
                   <option value="5">5 questions</option>
                   <option value="10">10 questions</option>
                   <option value="15">15 questions</option>
                   <option value="20">20 questions</option>
-                  <option value="30">30 questions</option>
+                  <option value="25">25 questions</option>
                 </select>
               </div>
             )}
             
-            <div>
-              <label className="block text-sm text-apple-gray mb-1">
-                {unlimitedMode ? 'Starting Level (Optional)' : 'Select Level (Optional)'}
-              </label>
-              <select
-                className="w-full p-2 border rounded-md bg-white dark:bg-gray-800"
-                value={selectedLevel === null ? '' : selectedLevel}
-                onChange={(e) => setSelectedLevel(e.target.value ? parseInt(e.target.value, 10) : null)}
-              >
-                <option value="">All Levels (Random)</option>
-                {availableLevels.map((level) => (
-                  <option key={level.level} value={level.level}>
-                    Level {level.level} ({level.questionCount} questions)
-                  </option>
-                ))}
-              </select>
-            </div>
+            {!unlimitedMode && (
+              <div className="mb-4">
+                <label className="block text-sm text-gray-600 mb-1">Difficulty Level</label>
+                <select
+                  className="w-full p-2 border rounded-md bg-white"
+                  value={selectedLevel === null ? "" : selectedLevel}
+                  onChange={(e) => setSelectedLevel(e.target.value === "" ? null : parseInt(e.target.value))}
+                >
+                  <option value="">All Levels</option>
+                  {availableLevels.map((level) => (
+                    <option key={level.level} value={level.level}>
+                      Level {level.level} ({level.questionCount} questions)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           
-          <button 
-            onClick={startQuiz} 
-            className="apple-button w-full"
-            disabled={loading}
-          >
+          <button onClick={startQuiz} className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition-colors">
             Start Quiz
           </button>
         </div>
@@ -292,29 +258,37 @@ export default function Home() {
   }
 
   if (quizFinished) {
-    const scorePercentage = Math.round((score / questions.length) * 100);
+    const totalQuestions = questions.length;
+    const percentage = Math.round((score / totalQuestions) * 100);
     
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-gray-900">
-        <div className="apple-card max-w-md w-full result-card">
-          <h1 className="text-2xl font-bold mb-4">Quiz Complete!</h1>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-white">
+        <div className="bg-white rounded-lg shadow-md p-6 text-center max-w-md w-full">
+          <h2 className="text-2xl font-bold mb-4">Quiz Complete!</h2>
           
-          <div className="score-circle">
-            {scorePercentage}%
+          <div className="w-32 h-32 rounded-full border-4 border-blue-500 flex items-center justify-center mx-auto my-6">
+            <div className="text-3xl font-bold text-blue-500">{percentage}%</div>
           </div>
           
-          <p className="text-xl mb-2">Your Score: {score}/{questions.length}</p>
-          <p className="text-apple-gray mb-6">
-            {scorePercentage >= 80 
-              ? "Excellent! You're a master of this topic!" 
-              : scorePercentage >= 60 
-                ? "Good job! You have a solid understanding." 
-                : "Keep practicing to improve your knowledge."}
+          <p className="text-lg mb-2">
+            You scored <span className="font-semibold">{score} out of {totalQuestions}</span>
           </p>
           
-          <button onClick={restartQuiz} className="apple-button w-full">
-            New Quiz
-          </button>
+          <p className="text-gray-600 mb-6">
+            {percentage >= 90 ? '🎉 Excellent! You\'re a master!' : 
+             percentage >= 70 ? '👍 Great job! Keep it up!' : 
+             percentage >= 50 ? '😊 Good effort! Room for improvement.' : 
+             '📚 Keep studying, you\'ll get there!'}
+          </p>
+          
+          <div className="space-y-3">
+            <button
+              onClick={restartQuiz}
+              className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              New Quiz
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -322,101 +296,81 @@ export default function Home() {
 
   const currentQuestion = questions[currentQuestionIndex];
   
-  // Display for unlimited mode
-  const unlimitedDisplay = unlimitedMode ? (
-    <div className="mb-2">
-      <span className="text-apple-gray">Unlimited Mode | Question {currentQuestionIndex + 1}</span>
-      <span className="ml-2 px-2 py-0.5 bg-apple-blue text-white text-xs rounded-full">Score: {score}</span>
-    </div>
-  ) : null;
-
-  // Handle the case where we're waiting for more questions
-  if (!currentQuestion) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-apple-blue mx-auto mb-4"></div>
-          <p className="text-xl">Loading more questions...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex flex-col p-4 bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-gray-900">
-      <div className="apple-card flex-1 flex flex-col max-w-2xl mx-auto w-full">
-        {/* Header */}
-        <div className="mb-6">
-          {unlimitedDisplay || (
-            <p className="text-apple-gray">Question {currentQuestionIndex + 1} of {questions.length}</p>
-          )}
-          <div className="quiz-progress mt-2">
-            <div className="quiz-progress-bar" style={{ width: `${getProgressPercentage()}%` }}></div>
+    <div className="min-h-screen p-4 bg-white flex flex-col">
+      <div className="container mx-auto max-w-2xl flex-1 flex flex-col">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="text-sm font-medium text-gray-600">
+            {unlimitedMode ? `Question ${currentQuestionIndex + 1}` : `Question ${currentQuestionIndex + 1} of ${questions.length}`}
+          </div>
+          <div className="text-sm font-medium text-gray-600">
+            Score: {score}
+            {!unlimitedMode && ` / ${questions.length}`}
           </div>
         </div>
         
-        {/* Question */}
-        <div className="mb-8">
-          <h2 className="text-xl font-medium mb-1">
-            {currentQuestion?.id && <span className="text-apple-gray font-normal">{currentQuestion.id}: </span>}
-            {currentQuestion?.question}
-          </h2>
+        <div className="h-1 w-full bg-gray-200 rounded-full mb-6">
+          <div 
+            className="h-1 bg-green-500 rounded-full" 
+            style={{ width: `${getProgressPercentage()}%` }}
+          ></div>
         </div>
         
-        {/* Options */}
-        <div className="flex-1 mb-6">
-          {currentQuestion?.options.map((option, index) => (
-            <div
-              key={index}
-              className={`quiz-option ${selectedOption === index ? 'selected' : ''} 
-                ${showAnswer && index === currentQuestion.correctAnswer ? 'correct' : ''} 
-                ${showAnswer && selectedOption === index && selectedOption !== currentQuestion.correctAnswer ? 'incorrect' : ''}`}
-              onClick={() => handleOptionSelect(index)}
-            >
-              <div className="flex items-center">
-                <div className="w-6 h-6 rounded-full border-2 border-current flex items-center justify-center mr-3">
-                  {String.fromCharCode(65 + index)}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-4 flex-1">
+          <h2 className="text-xl font-medium mb-6">{currentQuestion.question}</h2>
+          
+          <div className="space-y-3">
+            {currentQuestion.options.map((option, index) => (
+              <div
+                key={index}
+                onClick={() => handleOptionSelect(index)}
+                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                  selectedOption === index && showAnswer
+                    ? index === currentQuestion.correctAnswer
+                      ? 'border-green-500 bg-green-50 text-green-700'
+                      : 'border-red-500 bg-red-50 text-red-700'
+                    : selectedOption === index
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center">
+                  <div className="mr-3">
+                    <div className={`w-6 h-6 flex items-center justify-center rounded-full ${
+                      selectedOption === index && showAnswer
+                        ? index === currentQuestion.correctAnswer
+                          ? 'bg-green-500 text-white'
+                          : 'bg-red-500 text-white'
+                        : selectedOption === index
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}>
+                      {String.fromCharCode(65 + index)}
+                    </div>
+                  </div>
+                  <div>{option}</div>
                 </div>
-                <div>{option}</div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
         
-        {/* Explanation Section */}
-        {showAnswer && selectedOption !== null && selectedOption !== currentQuestion.correctAnswer && (
-          <div className="mb-6">
-            <div className="p-4 bg-apple-red bg-opacity-10 rounded-lg border border-apple-red">
-              <h3 className="text-sm font-semibold text-apple-red mb-1">Why is this incorrect?</h3>
-              {loadingExplanation ? (
-                <div className="flex items-center text-apple-gray">
-                  <div className="w-4 h-4 border-2 border-apple-red border-t-transparent rounded-full animate-spin mr-2"></div>
-                  <span>Generating explanation...</span>
-                </div>
-              ) : (
-                <p className="text-sm">{explanation}</p>
-              )}
-            </div>
-          </div>
-        )}
-        
-        {/* Navigation */}
-        <div className="flex">
-          {unlimitedMode && (
-            <button 
-              className="apple-button-secondary mr-2" 
-              onClick={() => setQuizFinished(true)}
+        <div className="flex justify-between mt-4">
+          {showAnswer && (
+            <button
+              onClick={handleNextQuestion}
+              className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors ml-auto"
             >
-              End Quiz
+              {currentQuestionIndex < questions.length - 1 || unlimitedMode ? 'Next Question' : 'See Results'}
             </button>
           )}
           
-          {showAnswer && (
-            <button 
-              className="apple-button flex-1" 
-              onClick={handleNextQuestion}
+          {!showAnswer && (
+            <button
+              onClick={restartQuiz}
+              className="text-blue-500 hover:text-blue-700 transition-colors"
             >
-              {currentQuestionIndex < questions.length - 1 || unlimitedMode ? 'Next Question' : 'See Results'}
+              End Quiz
             </button>
           )}
         </div>
