@@ -3,6 +3,12 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --apple-blue: #007AFF;
+  --apple-green: #34C759;
+  --apple-red: #FF3B30;
+  --apple-gray: #8E8E93;
+  --apple-light-gray: #F2F2F7;
+  --apple-font: SF Pro Text, -apple-system, BlinkMacSystemFont, system-ui, Roboto, Helvetica, Arial, sans-serif;
 }
 
 @theme inline {
@@ -14,13 +20,126 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #000000;
+    --foreground: #ffffff;
+    --apple-light-gray: #1C1C1E;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--apple-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.apple-card {
+  background-color: var(--background);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+}
+
+.apple-button {
+  background-color: var(--apple-blue);
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  padding: 12px 24px;
+  transition: all 0.2s ease;
+}
+
+.apple-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 122, 255, 0.3);
+}
+
+.apple-button:active {
+  transform: translateY(0);
+  opacity: 0.9;
+}
+
+/* Secondary button style for End Quiz button */
+.apple-button-secondary {
+  background-color: transparent;
+  border: 1px solid var(--apple-gray);
+  border-radius: 8px;
+  color: var(--foreground);
+  font-weight: 500;
+  padding: 12px 24px;
+  transition: all 0.2s ease;
+}
+
+.apple-button-secondary:hover {
+  background-color: var(--apple-light-gray);
+  transform: translateY(-1px);
+}
+
+.apple-button-secondary:active {
+  transform: translateY(0);
+  opacity: 0.9;
+}
+
+.quiz-option {
+  border: 2px solid var(--apple-light-gray);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quiz-option:hover {
+  border-color: var(--apple-blue);
+  background-color: rgba(0, 122, 255, 0.05);
+}
+
+.quiz-option.correct {
+  border-color: var(--apple-green);
+  background-color: rgba(52, 199, 89, 0.1);
+}
+
+.quiz-option.incorrect {
+  border-color: var(--apple-red);
+  background-color: rgba(255, 59, 48, 0.1);
+}
+
+.quiz-option.selected {
+  border-color: var(--apple-blue);
+  background-color: rgba(0, 122, 255, 0.1);
+}
+
+.quiz-progress {
+  height: 4px;
+  background-color: var(--apple-light-gray);
+  border-radius: 2px;
+  margin: 20px 0;
+}
+
+.quiz-progress-bar {
+  height: 100%;
+  background-color: var(--apple-blue);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.result-card {
+  text-align: center;
+  padding: 32px;
+}
+
+.score-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 60px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 24px;
+  background-color: rgba(0, 122, 255, 0.1);
+  color: var(--apple-blue);
 }
